@@ -29,4 +29,11 @@ import jakarta.persistence.Table;
 @Table(name = "specialties")
 public class Specialty extends NamedEntity {
 
+	public Specialty() {
+	}
+
+	public Specialty(Integer id, String name) {
+		super(id, name);
+	}
+
 }

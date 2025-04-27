@@ -15,10 +15,7 @@
  */
 package org.springframework.samples.petclinic.vet;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.samples.petclinic.model.NamedEntity;
@@ -49,6 +46,14 @@ public class Vet extends Person {
 			inverseJoinColumns = @JoinColumn(name = "specialty_id"))
 	private Set<Specialty> specialties;
 
+	public Vet() {
+	}
+
+	public Vet(Integer id, String firstName, String lastName, List<Specialty> specialties) {
+		super(id, firstName, lastName);
+		this.specialties = new HashSet<>(specialties);
+	}
+
 	protected Set<Specialty> getSpecialtiesInternal() {
 		if (this.specialties == null) {
 			this.specialties = new HashSet<>();
@@ -58,9 +63,7 @@ public class Vet extends Person {
 
 	@XmlElement
 	public List<Specialty> getSpecialties() {
-		return getSpecialtiesInternal().stream()
-			.sorted(Comparator.comparing(NamedEntity::getName))
-			.collect(Collectors.toList());
+		return getSpecialtiesInternal().stream().sorted(Comparator.comparing(NamedEntity::getName)).toList();
 	}
 
 	public int getNrOfSpecialties() {
