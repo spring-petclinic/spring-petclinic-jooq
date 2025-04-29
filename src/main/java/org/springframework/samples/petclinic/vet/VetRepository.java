@@ -17,11 +17,12 @@ package org.springframework.samples.petclinic.vet;
 
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.exception.DataAccessException;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.samples.petclinic.system.JooqHelper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,8 +32,7 @@ import java.util.List;
 import static org.jooq.generated.tables.Specialties.SPECIALTIES;
 import static org.jooq.generated.tables.VetSpecialties.*;
 import static org.jooq.generated.tables.Vets.*;
-import static org.jooq.impl.DSL.multiset;
-import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.DSL.*;
 
 /**
  * Repository class for <code>Vet</code> domain objects. <p N relationships can be managed
@@ -46,7 +46,6 @@ import static org.jooq.impl.DSL.select;
  * @see <a href=
  * "https://blog.jooq.org/jooq-3-15s-new-multiset-operator-will-change-how-you-think-about-sql/">jOOQ
  * 3.15’s New Multiset Operator Will Change How You Think About SQL</a>
- *
  * @author Ken Krebs
  * @author Juergen Hoeller
  * @author Sam Brannen
@@ -87,20 +86,23 @@ public class VetRepository {
 	@Cacheable("vets")
 	public Page<Vet> findAll(Pageable pageable) throws DataAccessException {
 		Field<List<Specialty>> specialties = multisetSpecialities();
-		List<Vet> vets = dsl.select(VETS.ID, VETS.FIRST_NAME, VETS.LAST_NAME, multisetSpecialities())
-			.from(VETS)
-			.orderBy(VETS.ID)
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize())
-			.fetch(it -> new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME),
-					it.get(specialties)));
-		return new PageImpl<>(vets, pageable, vets.size());
+		var ref = new Object() {
+			Integer totalVets = 0;
+
+		};
+		List<Vet> vets = JooqHelper
+			.paginate(dsl, dsl.select(VETS.ID, VETS.FIRST_NAME, VETS.LAST_NAME, multisetSpecialities()).from(VETS),
+					new Field[] { VETS.ID }, pageable.getPageSize(), pageable.getOffset())
+			.fetch(it -> {
+				ref.totalVets = (Integer) it.get("total_rows");
+				return new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME), it.get(specialties));
+			});
+		return new PageImpl<>(vets, pageable, ref.totalVets);
 	}
 
 	private static Field<List<Specialty>> multisetSpecialities() {
 		return multiset(
-				select(VET_SPECIALTIES.specialties().ID, VET_SPECIALTIES.specialties().NAME)
-					.from(VET_SPECIALTIES)
+				select(VET_SPECIALTIES.specialties().ID, VET_SPECIALTIES.specialties().NAME).from(VET_SPECIALTIES)
 					.where(VET_SPECIALTIES.VET_ID.eq(VETS.ID)))
 			.as("specialties")
 			.convertFrom(result -> result.map(it -> new Specialty(it.get(SPECIALTIES.ID), it.get(SPECIALTIES.NAME))));
