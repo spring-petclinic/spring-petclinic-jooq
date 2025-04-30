@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -29,11 +30,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.samples.petclinic.owner.Owner;
-import org.springframework.samples.petclinic.owner.OwnerRepository;
-import org.springframework.samples.petclinic.owner.Pet;
-import org.springframework.samples.petclinic.owner.PetType;
-import org.springframework.samples.petclinic.owner.Visit;
+import org.springframework.samples.petclinic.owner.*;
 import org.springframework.samples.petclinic.vet.Vet;
 import org.springframework.samples.petclinic.vet.VetRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +74,9 @@ class ClinicServiceTests {
 
 	@Autowired
 	protected VetRepository vets;
+
+	@Autowired
+	protected VisitRepository visits;
 
 	Pageable pageable;
 
@@ -219,12 +219,12 @@ class ClinicServiceTests {
 		int found = pet7.getVisits().size();
 		Visit visit = new Visit();
 		visit.setDescription("test");
+		visit.setPetId(pet7.getId());
+		int count = this.visits.save(visit);
+		List<Visit> visits = this.visits.findByPetId(pet7.getId());
 
-		owner6.addVisit(pet7.getId(), visit);
-		this.owners.save(owner6);
-
-		assertThat(pet7.getVisits()) //
-			.hasSize(found + 1) //
+		assertThat(count).isEqualTo(1);
+		assertThat(visits).hasSize(found + 1) //
 			.allMatch(value -> value.getId() != null);
 	}
 
