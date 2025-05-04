@@ -37,7 +37,8 @@
     <maven-checkstyle.version>3.6.0</maven-checkstyle.version>
     <nohttp-checkstyle.version>0.0.11</nohttp-checkstyle.version>
     <spring-format.version>0.0.43</spring-format.version>
-
+    <!-- To keep synchronized with the Spring Boot BOM  -->
+    <jooq-meta-extensions.version>3.19.18</jooq-meta-extensions.version>
   </properties>
 
   <dependencies>
@@ -358,7 +359,7 @@
           <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-meta-extensions</artifactId>
-            <version>3.19.18</version>
+            <version>${jooq-meta-extensions.version}</version>
           </dependency>
         </dependencies>
       </plugin>
