@@ -35,10 +35,10 @@ import java.util.Locale;
 @Component
 public class PetTypeFormatter implements Formatter<PetType> {
 
-	private final OwnerRepository owners;
+	private final PetRepository pets;
 
-	public PetTypeFormatter(OwnerRepository owners) {
-		this.owners = owners;
+	public PetTypeFormatter(PetRepository pets) {
+		this.pets = pets;
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class PetTypeFormatter implements Formatter<PetType> {
 
 	@Override
 	public PetType parse(String text, Locale locale) throws ParseException {
-		Collection<PetType> findPetTypes = this.owners.findPetTypes();
+		Collection<PetType> findPetTypes = this.pets.findPetTypes();
 		for (PetType type : findPetTypes) {
 			if (type.getName().equals(text)) {
 				return type;

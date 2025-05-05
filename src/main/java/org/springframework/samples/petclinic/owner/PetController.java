@@ -48,13 +48,16 @@ class PetController {
 
 	private final OwnerRepository owners;
 
-	public PetController(OwnerRepository owners) {
+	private final PetRepository pets;
+
+	public PetController(OwnerRepository owners, PetRepository pets) {
 		this.owners = owners;
+		this.pets = pets;
 	}
 
 	@ModelAttribute("types")
 	public Collection<PetType> populatePetTypes() {
-		return this.owners.findPetTypes();
+		return this.pets.findPetTypes();
 	}
 
 	@ModelAttribute("owner")

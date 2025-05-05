@@ -43,7 +43,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PetTypeFormatterTests {
 
 	@Mock
-	private OwnerRepository pets;
+	private PetRepository pets;
 
 	private PetTypeFormatter petTypeFormatter;
 

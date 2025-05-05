@@ -73,6 +73,9 @@ class ClinicServiceTests {
 	protected OwnerRepository owners;
 
 	@Autowired
+	protected PetRepository pets;
+
+	@Autowired
 	protected VetRepository vets;
 
 	@Autowired
@@ -140,7 +143,7 @@ class ClinicServiceTests {
 
 	@Test
 	void shouldFindAllPetTypes() {
-		Collection<PetType> petTypes = this.owners.findPetTypes();
+		Collection<PetType> petTypes = this.pets.findPetTypes();
 
 		PetType petType1 = EntityUtils.getById(petTypes, PetType.class, 1);
 		assertThat(petType1.getName()).isEqualTo("cat");
@@ -159,7 +162,7 @@ class ClinicServiceTests {
 
 		Pet pet = new Pet();
 		pet.setName("bowser");
-		Collection<PetType> types = this.owners.findPetTypes();
+		Collection<PetType> types = this.pets.findPetTypes();
 		pet.setType(EntityUtils.getById(types, PetType.class, 2));
 		pet.setBirthDate(LocalDate.now());
 		owner6.addPet(pet);
