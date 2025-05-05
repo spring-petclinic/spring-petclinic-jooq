@@ -191,7 +191,7 @@ class ClinicServiceTests {
 
 		String newName = oldName + "X";
 		pet7.setName(newName);
-		this.owners.save(owner6);
+		this.pets.update(pet7);
 
 		optionalOwner = this.owners.findById(6);
 		assertThat(optionalOwner).isPresent();

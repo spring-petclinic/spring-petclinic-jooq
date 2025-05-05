@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.jooq.generated.tables.Pets.PETS;
 import static org.jooq.generated.tables.Types.TYPES;
 
 @Repository
@@ -24,6 +25,15 @@ public class PetRepository {
 	@Transactional(readOnly = true)
 	public List<PetType> findPetTypes() {
 		return dsl.selectFrom(TYPES).orderBy(TYPES.NAME).fetchInto(PetType.class);
+	}
+
+	public void update(Pet pet) {
+		dsl.update(PETS)
+			.set(PETS.NAME, pet.getName())
+			.set(PETS.TYPE_ID, pet.getType().getId())
+			.set(PETS.BIRTH_DATE, pet.getBirthDate())
+			.where(PETS.ID.eq(pet.getId()))
+			.execute();
 	}
 
 }
