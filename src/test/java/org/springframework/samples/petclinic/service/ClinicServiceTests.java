@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -80,6 +81,9 @@ class ClinicServiceTests {
 
 	@Autowired
 	protected VisitRepository visits;
+
+	@Autowired
+	protected EntityManager entityManager;
 
 	Pageable pageable;
 
@@ -165,11 +169,10 @@ class ClinicServiceTests {
 		Collection<PetType> types = this.pets.findPetTypes();
 		pet.setType(EntityUtils.getById(types, PetType.class, 2));
 		pet.setBirthDate(LocalDate.now());
-		owner6.addPet(pet);
-		assertThat(owner6.getPets()).hasSize(found + 1);
 
-		this.owners.save(owner6);
+		this.pets.save(owner6.getId(), pet);
 
+		entityManager.clear();
 		optionalOwner = this.owners.findById(6);
 		assertThat(optionalOwner).isPresent();
 		owner6 = optionalOwner.get();

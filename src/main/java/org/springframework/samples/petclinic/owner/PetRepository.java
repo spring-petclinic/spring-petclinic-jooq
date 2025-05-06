@@ -27,6 +27,15 @@ public class PetRepository {
 		return dsl.selectFrom(TYPES).orderBy(TYPES.NAME).fetchInto(PetType.class);
 	}
 
+	public void save(Integer ownerId, Pet pet) {
+		dsl.insertInto(PETS)
+			.set(PETS.NAME, pet.getName())
+			.set(PETS.TYPE_ID, pet.getType().getId())
+			.set(PETS.BIRTH_DATE, pet.getBirthDate())
+			.set(PETS.OWNER_ID, ownerId)
+			.execute();
+	}
+
 	public void update(Pet pet) {
 		dsl.update(PETS)
 			.set(PETS.NAME, pet.getName())
