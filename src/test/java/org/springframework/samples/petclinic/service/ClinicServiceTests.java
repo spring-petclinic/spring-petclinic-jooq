@@ -250,4 +250,16 @@ class ClinicServiceTests {
 			.isNotNull();
 	}
 
+	@Test
+	void shouldFindPetById() {
+		Optional<Pet> pet = this.pets.findById(4);
+
+		assertThat(pet).isPresent();
+		assertThat(pet.get().getId()).isEqualTo(4);
+		assertThat(pet.get().getName()).isEqualTo("Jewel");
+		assertThat(pet.get().getType().getId()).isEqualTo(2);
+		assertThat(pet.get().getType().getName()).isEqualTo("dog");
+		assertThat(pet.get().getBirthDate()).isEqualTo(LocalDate.of(2010, 3, 7));
+	}
+
 }

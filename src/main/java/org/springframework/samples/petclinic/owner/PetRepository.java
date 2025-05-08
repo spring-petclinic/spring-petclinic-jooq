@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.jooq.generated.tables.Pets.PETS;
 import static org.jooq.generated.tables.Types.TYPES;
@@ -43,6 +44,16 @@ public class PetRepository {
 			.set(PETS.BIRTH_DATE, pet.getBirthDate())
 			.where(PETS.ID.eq(pet.getId()))
 			.execute();
+	}
+
+	@Transactional(readOnly = true)
+	public Optional<Pet> findById(Integer petId) {
+		return dsl.select()
+			.from(PETS)
+			.join(PETS.types_())
+			.where(PETS.ID.eq(petId))
+			.fetchOptional(it -> new Pet(it.get(PETS.ID), it.get(PETS.NAME), it.get(PETS.BIRTH_DATE),
+					new PetType(it.get(PETS.TYPE_ID), it.get(TYPES.NAME))));
 	}
 
 }

@@ -81,6 +81,8 @@ class PetControllerTests {
 		pet.setName("petty");
 		dog.setName("doggy");
 		given(this.owners.findById(TEST_OWNER_ID)).willReturn(Optional.of(owner));
+
+		given(this.pets.findById(TEST_PET_ID)).willReturn(Optional.of(pet));
 	}
 
 	@Test
