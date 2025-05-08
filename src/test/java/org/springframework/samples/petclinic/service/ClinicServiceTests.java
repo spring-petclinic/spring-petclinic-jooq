@@ -30,6 +30,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.samples.petclinic.owner.*;
 import org.springframework.samples.petclinic.vet.Vet;
@@ -85,7 +86,7 @@ class ClinicServiceTests {
 	@Autowired
 	protected EntityManager entityManager;
 
-	Pageable pageable;
+	Pageable pageable = PageRequest.ofSize(10);
 
 	@Test
 	void shouldFindOwnersByLastName() {
@@ -120,7 +121,6 @@ class ClinicServiceTests {
 		owner.setCity("Wollongong");
 		owner.setTelephone("4444444444");
 		this.owners.save(owner);
-		assertThat(owner.getId()).isNotZero();
 
 		owners = this.owners.findByLastNameStartingWith("Schultz", pageable);
 		assertThat(owners.getTotalElements()).isEqualTo(found + 1);

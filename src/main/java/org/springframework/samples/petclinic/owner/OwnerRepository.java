@@ -15,12 +15,25 @@
  */
 package org.springframework.samples.petclinic.owner;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import jakarta.annotation.Nonnull;
+import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.samples.petclinic.system.JooqHelper;
+import org.springframework.stereotype.Repository;
+
+import static org.jooq.generated.tables.Owners.OWNERS;
+import static org.jooq.generated.tables.Pets.PETS;
+import static org.jooq.generated.tables.Types.TYPES;
+import static org.jooq.generated.tables.Visits.VISITS;
+import static org.jooq.impl.DSL.multiset;
+import static org.jooq.impl.DSL.select;
 
 /**
  * Repository class for <code>Owner</code> domain objects All method names are compliant
@@ -34,7 +47,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author Michael Isvy
  * @author Wick Dynex
  */
-public interface OwnerRepository extends JpaRepository<Owner, Integer> {
+@Repository
+public class OwnerRepository {
+
+	private final DSLContext dsl;
+
+	public OwnerRepository(DSLContext dsl) {
+		this.dsl = dsl;
+	}
 
 	/**
 	 * Retrieve {@link Owner}s from the data store by last name, returning all owners
@@ -43,7 +63,26 @@ public interface OwnerRepository extends JpaRepository<Owner, Integer> {
 	 * @return a Collection of matching {@link Owner}s (or an empty Collection if none
 	 * found)
 	 */
-	Page<Owner> findByLastNameStartingWith(String lastName, Pageable pageable);
+	public Page<Owner> findByLastNameStartingWith(String lastName, Pageable pageable) {
+		Field<List<Pet>> pets = multisetPets();
+		var ref = new Object() {
+			Integer totalOwners = 0;
+
+		};
+		List<Owner> owners = JooqHelper
+			.paginate(dsl,
+					dsl.select(OWNERS.ID, OWNERS.FIRST_NAME, OWNERS.LAST_NAME, OWNERS.ADDRESS, OWNERS.CITY,
+							OWNERS.TELEPHONE, multisetPets())
+						.from(OWNERS)
+						.where(OWNERS.LAST_NAME.likeIgnoreCase(lastName + "%")),
+					new Field[] { OWNERS.ID }, pageable.getPageSize(), pageable.getOffset())
+			.fetch(it -> {
+				ref.totalOwners = (Integer) it.get("total_rows");
+				return new Owner(it.get(OWNERS.ID), it.get(OWNERS.FIRST_NAME), it.get(OWNERS.LAST_NAME),
+						it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE), it.get(pets));
+			});
+		return new PageImpl<>(owners, pageable, ref.totalOwners);
+	}
 
 	/**
 	 * Retrieve an {@link Owner} from the data store by id.
@@ -58,6 +97,46 @@ public interface OwnerRepository extends JpaRepository<Owner, Integer> {
 	 * @throws IllegalArgumentException if the id is null (assuming null is not a valid
 	 * input for id)
 	 */
-	Optional<Owner> findById(@Nonnull Integer id);
+	public Optional<Owner> findById(@Nonnull Integer id) {
+		Optional<Owner> owner = dsl
+			.select(OWNERS.ID, OWNERS.FIRST_NAME, OWNERS.LAST_NAME, OWNERS.ADDRESS, OWNERS.CITY, OWNERS.TELEPHONE,
+					multisetPets())
+			.from(OWNERS)
+			.where(OWNERS.ID.eq(id))
+			.fetchOptional(it -> new Owner(it.get(OWNERS.ID), it.get(OWNERS.FIRST_NAME), it.get(OWNERS.LAST_NAME),
+					it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE), it.get(multisetPets())));
+
+		// TODO : improve the N+1 select issue (not reallu a problem in this use case
+		// because an owner has a limited number of pets)
+		owner.ifPresent(value -> value.getPets().forEach(pet -> {
+			List<Visit> visits = dsl.select(VISITS.ID, VISITS.PET_ID, VISITS.VISIT_DATE, VISITS.DESCRIPTION)
+				.from(VISITS)
+				.where(VISITS.PET_ID.eq(pet.getId()))
+				.fetch(it -> new Visit(it.get(VISITS.ID), it.get(VISITS.VISIT_DATE), it.get(VISITS.DESCRIPTION)));
+			pet.getVisits().addAll(visits);
+		}));
+		return owner;
+
+	}
+
+	public void save(Owner owner) {
+		if (owner.isNew()) {
+			dsl.insertInto(OWNERS).set(mapOwnerToRecord(owner)).execute();
+		}
+		else {
+			dsl.update(OWNERS).set(mapOwnerToRecord(owner)).where(OWNERS.ID.eq(owner.getId())).execute();
+		}
+	}
+
+	private Map<Field<?>, Object> mapOwnerToRecord(Owner owner) {
+		return Map.of(OWNERS.FIRST_NAME, owner.getFirstName(), OWNERS.LAST_NAME, owner.getLastName(), OWNERS.ADDRESS,
+				owner.getAddress(), OWNERS.CITY, owner.getCity(), OWNERS.TELEPHONE, owner.getTelephone());
+	}
+
+	private static Field<List<Pet>> multisetPets() {
+		return multiset(select().from(PETS).join(PETS.types_()).where(OWNERS.ID.eq(PETS.OWNER_ID))).as("pets")
+			.convertFrom(result -> result.map(it -> new Pet(it.get(PETS.ID), it.get(PETS.NAME), it.get(PETS.BIRTH_DATE),
+					new PetType(it.get(PETS.TYPE_ID), it.get(TYPES.NAME)))));
+	}
 
 }

@@ -65,6 +65,18 @@ public class Owner extends Person {
 	@OrderBy("name")
 	private final List<Pet> pets = new ArrayList<>();
 
+	public Owner() {
+	}
+
+	public Owner(Integer id, String firstName, String lastName, String address, String city, String telephone,
+			List<Pet> pets) {
+		super(id, firstName, lastName);
+		this.address = address;
+		this.city = city;
+		this.telephone = telephone;
+		this.pets.addAll(pets);
+	}
+
 	public String getAddress() {
 		return this.address;
 	}

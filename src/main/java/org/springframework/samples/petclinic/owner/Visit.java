@@ -52,6 +52,12 @@ public class Visit extends BaseEntity {
 		this.date = LocalDate.now();
 	}
 
+	public Visit(Integer id, LocalDate localDate, String description) {
+		super(id);
+		this.date = localDate;
+		this.description = description;
+	}
+
 	public LocalDate getDate() {
 		return this.date;
 	}
