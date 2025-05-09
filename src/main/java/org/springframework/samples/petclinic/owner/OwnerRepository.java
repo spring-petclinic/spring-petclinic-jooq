@@ -22,10 +22,9 @@ import java.util.Optional;
 import jakarta.annotation.Nonnull;
 import org.jooq.DSLContext;
 import org.jooq.Field;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.samples.petclinic.system.JooqHelper;
+import org.springframework.samples.petclinic.system.Page;
+import org.springframework.samples.petclinic.system.Pageable;
 import org.springframework.stereotype.Repository;
 
 import static org.jooq.generated.tables.Owners.OWNERS;
@@ -75,13 +74,13 @@ public class OwnerRepository {
 							OWNERS.TELEPHONE, multisetPets())
 						.from(OWNERS)
 						.where(OWNERS.LAST_NAME.likeIgnoreCase(lastName + "%")),
-					new Field[] { OWNERS.ID }, pageable.getPageSize(), pageable.getOffset())
+					new Field[] { OWNERS.ID }, pageable.pageSize(), pageable.getOffset())
 			.fetch(it -> {
 				ref.totalOwners = (Integer) it.get("total_rows");
 				return new Owner(it.get(OWNERS.ID), it.get(OWNERS.FIRST_NAME), it.get(OWNERS.LAST_NAME),
 						it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE), it.get(pets));
 			});
-		return new PageImpl<>(owners, pageable, ref.totalOwners);
+		return new Page<>(owners, pageable, ref.totalOwners);
 	}
 
 	/**

@@ -19,10 +19,9 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.exception.DataAccessException;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.samples.petclinic.system.JooqHelper;
+import org.springframework.samples.petclinic.system.Page;
+import org.springframework.samples.petclinic.system.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,12 +91,12 @@ public class VetRepository {
 		};
 		List<Vet> vets = JooqHelper
 			.paginate(dsl, dsl.select(VETS.ID, VETS.FIRST_NAME, VETS.LAST_NAME, multisetSpecialities()).from(VETS),
-					new Field[] { VETS.ID }, pageable.getPageSize(), pageable.getOffset())
+					new Field[] { VETS.ID }, pageable.pageSize(), pageable.getOffset())
 			.fetch(it -> {
 				ref.totalVets = (Integer) it.get("total_rows");
 				return new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME), it.get(specialties));
 			});
-		return new PageImpl<>(vets, pageable, ref.totalVets);
+		return new Page<>(vets, pageable, ref.totalVets);
 	}
 
 	private static Field<List<Specialty>> multisetSpecialities() {

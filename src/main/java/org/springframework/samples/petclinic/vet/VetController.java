@@ -17,9 +17,8 @@ package org.springframework.samples.petclinic.vet;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.samples.petclinic.system.Page;
+import org.springframework.samples.petclinic.system.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +46,7 @@ class VetController {
 		// objects so it is simpler for Object-Xml mapping
 		Vets vets = new Vets();
 		Page<Vet> paginated = findPaginated(page);
-		vets.getVetList().addAll(paginated.toList());
+		vets.getVetList().addAll(paginated.content());
 		return addPaginationModel(page, paginated, model);
 	}
 
@@ -62,7 +61,7 @@ class VetController {
 
 	private Page<Vet> findPaginated(int page) {
 		int pageSize = 5;
-		Pageable pageable = PageRequest.of(page - 1, pageSize);
+		Pageable pageable = Pageable.of(page - 1, pageSize);
 		return vetRepository.findAll(pageable);
 	}
 
