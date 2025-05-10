@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -81,9 +80,6 @@ class ClinicServiceTests {
 
 	@Autowired
 	protected VisitRepository visits;
-
-	@Autowired
-	protected EntityManager entityManager;
 
 	Pageable pageable = Pageable.ofSize(10);
 
@@ -171,7 +167,6 @@ class ClinicServiceTests {
 
 		this.pets.save(owner6.getId(), pet);
 
-		entityManager.clear();
 		optionalOwner = this.owners.findById(6);
 		assertThat(optionalOwner).isPresent();
 		owner6 = optionalOwner.get();
