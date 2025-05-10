@@ -115,7 +115,8 @@ class ClinicServiceTests {
 		owner.setAddress("4, Evans Street");
 		owner.setCity("Wollongong");
 		owner.setTelephone("4444444444");
-		this.owners.save(owner);
+		Integer ownerId = this.owners.save(owner);
+		assertThat(ownerId).isNotNull();
 
 		owners = this.owners.findByLastNameStartingWith("Schultz", pageable);
 		assertThat(owners.getTotalElements()).isEqualTo(found + 1);

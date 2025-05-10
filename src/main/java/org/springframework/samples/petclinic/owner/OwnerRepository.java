@@ -27,6 +27,7 @@ import org.springframework.samples.petclinic.system.Page;
 import org.springframework.samples.petclinic.system.Pageable;
 import org.springframework.stereotype.Repository;
 
+import static java.util.Objects.requireNonNull;
 import static org.jooq.generated.tables.Owners.OWNERS;
 import static org.jooq.generated.tables.Pets.PETS;
 import static org.jooq.generated.tables.Types.TYPES;
@@ -118,12 +119,15 @@ public class OwnerRepository {
 
 	}
 
-	public void save(Owner owner) {
+	public Integer save(Owner owner) {
 		if (owner.isNew()) {
-			dsl.insertInto(OWNERS).set(mapOwnerToRecord(owner)).execute();
+			return requireNonNull(
+					dsl.insertInto(OWNERS).set(mapOwnerToRecord(owner)).returningResult(OWNERS.ID).fetchOne())
+				.getValue(OWNERS.ID);
 		}
 		else {
 			dsl.update(OWNERS).set(mapOwnerToRecord(owner)).where(OWNERS.ID.eq(owner.getId())).execute();
+			return owner.getId();
 		}
 	}
 
