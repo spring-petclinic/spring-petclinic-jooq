@@ -15,10 +15,8 @@
  */
 package org.springframework.samples.petclinic.vet;
 
+import java.io.Serializable;
 import java.util.*;
-
-import org.springframework.samples.petclinic.model.NamedEntity;
-import org.springframework.samples.petclinic.model.Person;
 
 import jakarta.xml.bind.annotation.XmlElement;
 
@@ -30,36 +28,22 @@ import jakarta.xml.bind.annotation.XmlElement;
  * @author Sam Brannen
  * @author Arjen Poutsma
  */
-public class Vet extends Person {
+public record Vet(Integer id, String firstName, String lastName, Set<Specialty> specialties) implements Serializable {
 
-	private Set<Specialty> specialties;
-
-	public Vet() {
-	}
-
-	public Vet(Integer id, String firstName, String lastName, List<Specialty> specialties) {
-		super(id, firstName, lastName);
-		this.specialties = new HashSet<>(specialties);
-	}
-
-	protected Set<Specialty> getSpecialtiesInternal() {
-		if (this.specialties == null) {
-			this.specialties = new HashSet<>();
-		}
-		return this.specialties;
+	public Vet(Integer id, String firstName, String lastName) {
+		this(id, firstName, lastName, new HashSet<>());
 	}
 
 	@XmlElement
 	public List<Specialty> getSpecialties() {
-		return getSpecialtiesInternal().stream().sorted(Comparator.comparing(NamedEntity::getName)).toList();
+		return specialties.stream().sorted(Comparator.comparing(Specialty::name)).toList();
 	}
 
 	public int getNrOfSpecialties() {
-		return getSpecialtiesInternal().size();
+		return specialties.size();
 	}
 
 	public void addSpecialty(Specialty specialty) {
-		getSpecialtiesInternal().add(specialty);
+		specialties.add(specialty);
 	}
-
 }

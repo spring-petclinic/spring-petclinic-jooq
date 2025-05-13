@@ -52,21 +52,12 @@ class VetControllerTests {
 	private VetRepository vets;
 
 	private Vet james() {
-		Vet james = new Vet();
-		james.setFirstName("James");
-		james.setLastName("Carter");
-		james.setId(1);
-		return james;
+		return new Vet(1, "James", "Carter");
 	}
 
 	private Vet helen() {
-		Vet helen = new Vet();
-		helen.setFirstName("Helen");
-		helen.setLastName("Leary");
-		helen.setId(2);
-		Specialty radiology = new Specialty();
-		radiology.setId(1);
-		radiology.setName("radiology");
+		Vet helen = new Vet(2, "Helen", "Leary");
+		Specialty radiology = new Specialty(1, "radiology");
 		helen.addSpecialty(radiology);
 		return helen;
 	}

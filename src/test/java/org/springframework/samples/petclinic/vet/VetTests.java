@@ -27,15 +27,12 @@ class VetTests {
 
 	@Test
 	void testSerialization() {
-		Vet vet = new Vet();
-		vet.setFirstName("Zaphod");
-		vet.setLastName("Beeblebrox");
-		vet.setId(123);
+		Vet vet = new Vet(123, "Zaphod", "Beeblebrox");
 		@SuppressWarnings("deprecation")
 		Vet other = (Vet) SerializationUtils.deserialize(SerializationUtils.serialize(vet));
-		assertThat(other.getFirstName()).isEqualTo(vet.getFirstName());
-		assertThat(other.getLastName()).isEqualTo(vet.getLastName());
-		assertThat(other.getId()).isEqualTo(vet.getId());
+		assertThat(other.firstName()).isEqualTo(vet.firstName());
+		assertThat(other.lastName()).isEqualTo(vet.lastName());
+		assertThat(other.id()).isEqualTo(vet.id());
 	}
 
 }

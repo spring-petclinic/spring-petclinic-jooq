@@ -25,7 +25,7 @@ import org.springframework.samples.petclinic.system.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.jooq.generated.tables.Specialties.SPECIALTIES;
@@ -65,14 +65,14 @@ public class VetRepository {
 	 */
 	@Transactional(readOnly = true)
 	@Cacheable("vets")
-	public Collection<Vet> findAll() throws DataAccessException {
+	public List<Vet> findAll() throws DataAccessException {
 		Field<List<Specialty>> specialties = multisetSpecialities();
 		return dsl.select(VETS.ID, VETS.FIRST_NAME, VETS.LAST_NAME, specialties)
 			.from(VETS)
 			.leftJoin(VETS.vetSpecialties())
 			.orderBy(VETS.ID)
 			.fetch(it -> new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME),
-					it.get(specialties)));
+					new HashSet<>(it.get(specialties))));
 	}
 
 	/**
@@ -94,7 +94,8 @@ public class VetRepository {
 					new Field[] { VETS.ID }, pageable.pageSize(), pageable.getOffset())
 			.fetch(it -> {
 				ref.totalVets = (Integer) it.get("total_rows");
-				return new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME), it.get(specialties));
+				return new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME),
+						new HashSet<>(it.get(specialties)));
 			});
 		return new Page<>(vets, pageable, ref.totalVets);
 	}

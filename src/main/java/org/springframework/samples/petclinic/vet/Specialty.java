@@ -15,20 +15,11 @@
  */
 package org.springframework.samples.petclinic.vet;
 
-import org.springframework.samples.petclinic.model.NamedEntity;
-
 /**
  * Models a {@link Vet Vet's} specialty (for example, dentistry).
  *
  * @author Juergen Hoeller
  */
-public class Specialty extends NamedEntity {
-
-	public Specialty() {
-	}
-
-	public Specialty(Integer id, String name) {
-		super(id, name);
-	}
+public record Specialty(Integer id, String name) {
 
 }
