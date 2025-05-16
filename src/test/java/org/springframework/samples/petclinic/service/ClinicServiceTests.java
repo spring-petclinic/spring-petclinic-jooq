@@ -100,7 +100,7 @@ class ClinicServiceTests {
 		assertThat(owner.getLastName()).startsWith("Franklin");
 		assertThat(owner.getPets()).hasSize(1);
 		assertThat(owner.getPets().get(0).getType()).isNotNull();
-		assertThat(owner.getPets().get(0).getType().getName()).isEqualTo("cat");
+		assertThat(owner.getPets().get(0).getType().name()).isEqualTo("cat");
 	}
 
 	@Test
@@ -145,10 +145,10 @@ class ClinicServiceTests {
 	void shouldFindAllPetTypes() {
 		Collection<PetType> petTypes = this.pets.findPetTypes();
 
-		PetType petType1 = EntityUtils.getById(petTypes, PetType.class, 1);
-		assertThat(petType1.getName()).isEqualTo("cat");
-		PetType petType4 = EntityUtils.getById(petTypes, PetType.class, 4);
-		assertThat(petType4.getName()).isEqualTo("snake");
+		PetType petType1 = petTypes.stream().filter(v -> v.id() == 1).findFirst().orElseThrow();
+		assertThat(petType1.name()).isEqualTo("cat");
+		PetType petType4 = petTypes.stream().filter(v -> v.id() == 4).findFirst().orElseThrow();
+		assertThat(petType4.name()).isEqualTo("snake");
 	}
 
 	@Test
@@ -163,7 +163,7 @@ class ClinicServiceTests {
 		Pet pet = new Pet();
 		pet.setName("bowser");
 		Collection<PetType> types = this.pets.findPetTypes();
-		pet.setType(EntityUtils.getById(types, PetType.class, 2));
+		pet.setType(types.stream().filter(v -> v.id() == 2).findFirst().orElseThrow());
 		pet.setBirthDate(LocalDate.now());
 
 		this.pets.save(owner6.getId(), pet);
@@ -218,15 +218,13 @@ class ClinicServiceTests {
 
 		Pet pet7 = owner6.getPet(7);
 		int found = pet7.getVisits().size();
-		Visit visit = new Visit();
-		visit.setDescription("test");
-		visit.setPetId(pet7.getId());
+		Visit visit = new Visit(LocalDate.now(), "test", pet7.getId());
 		int count = this.visits.save(visit);
 		List<Visit> visits = this.visits.findByPetId(pet7.getId());
 
 		assertThat(count).isEqualTo(1);
 		assertThat(visits).hasSize(found + 1) //
-			.allMatch(value -> value.getId() != null);
+			.allMatch(value -> value.id() != null);
 	}
 
 	@Test
@@ -241,7 +239,7 @@ class ClinicServiceTests {
 		assertThat(visits) //
 			.hasSize(2) //
 			.element(0)
-			.extracting(Visit::getDate)
+			.extracting(Visit::date)
 			.isNotNull();
 	}
 
@@ -252,8 +250,8 @@ class ClinicServiceTests {
 		assertThat(pet).isPresent();
 		assertThat(pet.get().getId()).isEqualTo(4);
 		assertThat(pet.get().getName()).isEqualTo("Jewel");
-		assertThat(pet.get().getType().getId()).isEqualTo(2);
-		assertThat(pet.get().getType().getName()).isEqualTo("dog");
+		assertThat(pet.get().getType().id()).isEqualTo(2);
+		assertThat(pet.get().getType().name()).isEqualTo("dog");
 		assertThat(pet.get().getBirthDate()).isEqualTo(LocalDate.of(2010, 3, 7));
 	}
 

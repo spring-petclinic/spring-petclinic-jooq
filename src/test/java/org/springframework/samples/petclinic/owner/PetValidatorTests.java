@@ -38,13 +38,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @ExtendWith(MockitoExtension.class)
 @DisabledInNativeImage
-public class PetValidatorTests {
+class PetValidatorTests {
 
 	private PetValidator petValidator;
 
 	private Pet pet;
-
-	private PetType petType;
 
 	private Errors errors;
 
@@ -58,13 +56,12 @@ public class PetValidatorTests {
 	void setUp() {
 		petValidator = new PetValidator();
 		pet = new Pet();
-		petType = new PetType();
 		errors = new MapBindingResult(new HashMap<>(), "pet");
 	}
 
 	@Test
 	void testValidate() {
-		petType.setName(petTypeName);
+		var petType = new PetType(1, petTypeName);
 		pet.setName(petName);
 		pet.setType(petType);
 		pet.setBirthDate(petBirthDate);
@@ -79,7 +76,7 @@ public class PetValidatorTests {
 
 		@Test
 		void testValidateWithInvalidPetName() {
-			petType.setName(petTypeName);
+			var petType = new PetType(1, petTypeName);
 			pet.setName("");
 			pet.setType(petType);
 			pet.setBirthDate(petBirthDate);
@@ -102,7 +99,7 @@ public class PetValidatorTests {
 
 		@Test
 		void testValidateWithInvalidBirthDate() {
-			petType.setName(petTypeName);
+			var petType = new PetType(1, petTypeName);
 			pet.setName(petName);
 			pet.setType(petType);
 			pet.setBirthDate(null);

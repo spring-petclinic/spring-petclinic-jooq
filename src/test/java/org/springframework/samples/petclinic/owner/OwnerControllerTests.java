@@ -76,8 +76,7 @@ class OwnerControllerTests {
 		george.setCity("Madison");
 		george.setTelephone("6085551023");
 		Pet max = new Pet();
-		PetType dog = new PetType();
-		dog.setName("dog");
+		PetType dog = new PetType(1, "dog");
 		max.setType(dog);
 		max.setName("Max");
 		max.setBirthDate(LocalDate.now());
@@ -95,7 +94,6 @@ class OwnerControllerTests {
 
 		given(this.owners.findById(TEST_OWNER_ID)).willReturn(Optional.of(george));
 		Visit visit = new Visit();
-		visit.setDate(LocalDate.now());
 		george.getPet("Max").getVisits().add(visit);
 
 	}

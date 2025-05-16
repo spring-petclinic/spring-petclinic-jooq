@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.petclinic.owner;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
@@ -62,8 +63,8 @@ class VisitController {
 	 * @param petId
 	 * @return Pet
 	 */
-	@ModelAttribute("visit")
-	public Visit loadPetWithVisit(@PathVariable("ownerId") int ownerId, @PathVariable("petId") int petId,
+	@ModelAttribute("pet")
+	public Pet loadPetAndOwner(@PathVariable("ownerId") int ownerId, @PathVariable("petId") int petId,
 			Map<String, Object> model) {
 		Optional<Owner> optionalOwner = owners.findById(ownerId);
 		Owner owner = optionalOwner.orElseThrow(() -> new IllegalArgumentException(
@@ -72,10 +73,12 @@ class VisitController {
 		Pet pet = owner.getPet(petId);
 		model.put("pet", pet);
 		model.put("owner", owner);
+		return pet;
+	}
 
-		Visit visit = new Visit();
-		pet.addVisit(visit);
-		return visit;
+	@ModelAttribute("visit")
+	public Visit preparerVisit(Integer petId, LocalDate date, String description) {
+		return new Visit((date != null) ? date : LocalDate.now(), description, petId);
 	}
 
 	// Spring MVC calls method loadPetWithVisit(...) before initNewVisitForm is
@@ -93,8 +96,7 @@ class VisitController {
 		if (result.hasErrors()) {
 			return "pets/createOrUpdateVisitForm";
 		}
-		visit.setPetId(petId);
-		visits.save(visit);
+		visits.save(new Visit(visit.id(), visit.date(), visit.description(), petId));
 		redirectAttributes.addFlashAttribute("message", "Your visit has been booked");
 		return "redirect:/owners/{ownerId}";
 	}

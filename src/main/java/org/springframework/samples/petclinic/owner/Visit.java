@@ -18,8 +18,8 @@ package org.springframework.samples.petclinic.owner;
 import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.samples.petclinic.model.BaseEntity;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
 
 /**
@@ -28,51 +28,27 @@ import jakarta.validation.constraints.NotBlank;
  * @author Ken Krebs
  * @author Dave Syer
  */
-public class Visit extends BaseEntity {
+public record Visit(Integer id, @NotNull @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+		@NotBlank String description, Integer petId) {
 
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private LocalDate date;
-
-	@NotBlank
-	private String description;
-
-	private Integer petId;
-
-	/**
-	 * Creates a new instance of Visit for the current date
-	 */
 	public Visit() {
-		this.date = LocalDate.now();
+		this(null, LocalDate.now(), null, null);
 	}
 
-	public Visit(Integer id, LocalDate localDate, String description) {
-		super(id);
-		this.date = localDate;
-		this.description = description;
+	public Visit(String description) {
+		this(null, LocalDate.now(), description, null);
 	}
 
-	public LocalDate getDate() {
-		return this.date;
+	public Visit(LocalDate date, String description, Integer petId) {
+		this(null, date, description, petId);
 	}
 
-	public void setDate(LocalDate date) {
-		this.date = date;
+	public Visit(Integer id, LocalDate date, String description) {
+		this(id, date, description, null);
 	}
 
-	public String getDescription() {
-		return this.description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public Integer getPetId() {
-		return this.petId;
-	}
-
-	public void setPetId(Integer petId) {
-		this.petId = petId;
+	public boolean isNew() {
+		return this.id == null;
 	}
 
 }

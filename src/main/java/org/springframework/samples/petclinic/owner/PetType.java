@@ -15,18 +15,15 @@
  */
 package org.springframework.samples.petclinic.owner;
 
-import org.springframework.samples.petclinic.model.NamedEntity;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * @author Juergen Hoeller Can be Cat, Dog, Hamster...
  */
-public class PetType extends NamedEntity {
+public record PetType(Integer id, @NotBlank String name) {
 
-	public PetType() {
+	@Override
+	public String toString() {
+		return this.name;
 	}
-
-	public PetType(Integer id, String name) {
-		super(id, name);
-	}
-
 }

@@ -31,7 +31,7 @@ public class PetRepository {
 	public void save(Integer ownerId, Pet pet) {
 		dsl.insertInto(PETS)
 			.set(PETS.NAME, pet.getName())
-			.set(PETS.TYPE_ID, pet.getType().getId())
+			.set(PETS.TYPE_ID, pet.getType().id())
 			.set(PETS.BIRTH_DATE, pet.getBirthDate())
 			.set(PETS.OWNER_ID, ownerId)
 			.execute();
@@ -40,7 +40,7 @@ public class PetRepository {
 	public void update(Pet pet) {
 		dsl.update(PETS)
 			.set(PETS.NAME, pet.getName())
-			.set(PETS.TYPE_ID, pet.getType().getId())
+			.set(PETS.TYPE_ID, pet.getType().id())
 			.set(PETS.BIRTH_DATE, pet.getBirthDate())
 			.where(PETS.ID.eq(pet.getId()))
 			.execute();

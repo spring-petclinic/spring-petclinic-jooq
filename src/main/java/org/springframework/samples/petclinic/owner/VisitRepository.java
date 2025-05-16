@@ -18,9 +18,9 @@ public class VisitRepository {
 
 	public int save(Visit visit) {
 		return dsl.insertInto(VISITS)
-			.set(VISITS.PET_ID, visit.getPetId())
-			.set(VISITS.VISIT_DATE, visit.getDate())
-			.set(VISITS.DESCRIPTION, visit.getDescription())
+			.set(VISITS.PET_ID, visit.petId())
+			.set(VISITS.VISIT_DATE, visit.date())
+			.set(VISITS.DESCRIPTION, visit.description())
 			.execute();
 	}
 
@@ -28,7 +28,8 @@ public class VisitRepository {
 		return dsl.selectFrom(VISITS)
 			.where(VISITS.PET_ID.eq(petId))
 			.orderBy(VISITS.VISIT_DATE.desc())
-			.fetchInto(Visit.class);
+			.fetch(record -> new Visit(record.get(VISITS.ID), record.get(VISITS.VISIT_DATE),
+					record.get(VISITS.DESCRIPTION), record.get(VISITS.PET_ID)));
 	}
 
 }
