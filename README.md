@@ -35,7 +35,8 @@ provide type-safe SQL queries with precise control over database operations.
 The main differences with the original Spring Petclinic application are:
 - The domain and persistence layer is built using **jOOQ instead of Spring Data JPA**.
 - The `pom.xml` and `build.gradle` files are updated to include jOOQ dependencies and plugins.
-The `jooqCodegen` plugin is used to **generate the Java code from the H2 database schema**. You may switch to MySQL or PostgreSQL.
+The `jooqCodegen` plugin is used to **generate the Java code from the H2 database schema**. You may switch to MySQL or PostgreSQL. 
+See the [Database configuration](#database-configuration) section for more details.
 - With JPA, [Java records can’t be entities](https://thorben-janssen.com/java-records-hibernate-jpa/#records-cant-be-entities).
 With jOOQ, we could use some **Java records** as domain entities. The `Vet`, `Vets`, `Specialty`, `PetType` and `Visit` classes has been converted to records.
   Due to a limitation of the Spring MVC binding, the classes `Owner` and `Pet` remain as they are.
@@ -88,6 +89,12 @@ gets populated at startup with data. The h2 console is exposed at `http://localh
 and it is possible to inspect the content of the database using the `jdbc:h2:mem:<uuid>` URL. The UUID is printed at startup to the console.
 
 A similar setup is provided for MySQL and PostgreSQL if a persistent database configuration is needed. Note that whenever the database type changes, the app needs to run with a different profile: `spring.profiles.active=mysql` for MySQL or `spring.profiles.active=postgres` for PostgreSQL. See the [Spring Boot documentation](https://docs.spring.io/spring-boot/how-to/properties-and-configuration.html#howto.properties-and-configuration.set-active-spring-profiles) for more detail on how to set the active profile.
+
+For PostgreSQL, you have to change the `defaultNameCase` property in the `jooqCodegen` plugin configuration to `lower` in the `pom.xml` or `build.gradle` file, as PostgreSQL treats unquoted identifiers as lower case by default. This is not necessary for MySQL.
+Regenerate the jOOQ code after changing the database type by running the jOOQ codegen plugin again:
+```bash
+./mvnw compile org.jooq:jooq-codegen-maven:generate
+```
 
 You can start MySQL or PostgreSQL locally with whatever installer works for your OS or use docker:
 
