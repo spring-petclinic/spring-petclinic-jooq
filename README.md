@@ -1,6 +1,44 @@
-# Spring PetClinic Sample Application [![Build Status](https://github.com/spring-projects/spring-petclinic/actions/workflows/maven-build.yml/badge.svg)](https://github.com/spring-projects/spring-petclinic/actions/workflows/maven-build.yml)[![Build Status](https://github.com/spring-projects/spring-petclinic/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/spring-projects/spring-petclinic/actions/workflows/gradle-build.yml)
+# Spring PetClinic Sample Application built with jOOQ [![Build Status](https://github.com/spring-petclinic/spring-petclinic-jooq/actions/workflows/maven-build.yml/badge.svg)](https://github.com/spring-petclinic/spring-petclinic-jooq/actions/workflows/maven-build.yml)[![Build Status](https://github.com/spring-petclinic/spring-petclinic-jooq/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/spring-petclinic/spring-petclinic-jooq/actions/workflows/gradle-build.yml)
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/spring-projects/spring-petclinic) [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=7517918)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/spring-petclinic/spring-petclinic-jooq) [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=7517918)
+
+
+This is a fork of the official [Spring PetClinic](https://github.com/spring-projects/spring-petclinic) application with domain & persistence layer 
+built with [jOOQ](https://www.jooq.org/) instead of [Spring Data JPA](https://projects.spring.io/spring-data-jpa/).
+
+## What is jOOQ?
+
+**jOOQ** (**Java Object Oriented Querying**) is a database-mapping library that generates Java code from your database schema and 
+allows you to build **type-safe SQL queries** through its **fluent API**. Unlike JPA, which follows an object-first approach, 
+jOOQ takes a SQL-first approach, giving developers precise control over the SQL being executed while maintaining type safety.
+
+## jOOQ vs Spring Data JPA
+
+| Feature                    | jOOQ                                         | Spring Data JPA                              |
+|----------------------------|----------------------------------------------|----------------------------------------------|
+| Approach                   | SQL-first                                    | Object-first                                 |
+| Code generation            | Generates Java code from database schema     | Generates database schema from Java entities |
+| Query building             | Fluent API for SQL queries                   | Method names and annotations                 |
+| SQL control                | Precise control over SQL statements          | SQL generation handled by ORM                |
+| Performance                | Better for complex queries                   | Optimized for basic CRUD operations          |
+| Type safety                | Compile-time checking of SQL queries         | Limited compile-time checking                |
+| Learning curve             | Steeper for ORM developers                   | More familiar for Java developers            |
+| Caching & state management | No built-in caching or entity state tracking | Built-in caching and entity state management |
+| Verbosity                  | Very verbose. Queries can be factored.       | Very concise for simple CRUD operation       |
+| License                    | Commercial license for some features         | Open Source (Apache 2.0)                     |
+
+This Spring Petclinic implementation demonstrates how jOOQ can be used within a Spring Boot application to 
+provide type-safe SQL queries with precise control over database operations.
+
+## What are the differences with the original Spring Petclinic?
+
+The main differences with the original Spring Petclinic application are:
+- The domain and persistence layer is built using **jOOQ instead of Spring Data JPA**.
+- The `pom.xml` and `build.gradle` files are updated to include jOOQ dependencies and plugins.
+The `jooqCodegen` plugin is used to **generate the Java code from the H2 database schema**. You may switch to MySQL or PostgreSQL.
+- With JPA, [Java records can’t be entities](https://thorben-janssen.com/java-records-hibernate-jpa/#records-cant-be-entities).
+With jOOQ, we could use some **Java records** as domain entities. The `Vet`, `Vets`, `Specialty`, `PetType` and `Visit` classes has been converted to records.
+  Due to a limitation of the Spring MVC binding, the classes `Owner` and `Pet` remain as they are.
 
 ## Understanding the Spring Petclinic application with a few diagrams
 
@@ -11,7 +49,7 @@
 Spring Petclinic is a [Spring Boot](https://spring.io/guides/gs/spring-boot) application built using [Maven](https://spring.io/guides/gs/maven/) or [Gradle](https://spring.io/guides/gs/gradle/). You can build a jar file and run it from the command line (it should work just as well with Java 17 or newer):
 
 ```bash
-git clone https://github.com/spring-projects/spring-petclinic.git
+git clone https://github.com/spring-petclinic/spring-petclinic-jooq.git
 cd spring-petclinic
 ./mvnw package
 java -jar target/*.jar
@@ -41,7 +79,7 @@ There is no `Dockerfile` in this project. You can build a container image (if yo
 
 ## In case you find a bug/suggested improvement for Spring Petclinic
 
-Our issue tracker is available [here](https://github.com/spring-projects/spring-petclinic/issues).
+Our issue tracker is available [here](https://github.com/spring-petclinic/spring-petclinic-jooq/issues).
 
 ## Database configuration
 
@@ -63,8 +101,8 @@ or
 docker run -e POSTGRES_USER=petclinic -e POSTGRES_PASSWORD=petclinic -e POSTGRES_DB=petclinic -p 5432:5432 postgres:17.0
 ```
 
-Further documentation is provided for [MySQL](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/resources/db/mysql/petclinic_db_setup_mysql.txt)
-and [PostgreSQL](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/resources/db/postgres/petclinic_db_setup_postgres.txt).
+Further documentation is provided for [MySQL](https://github.com/spring-petclinic/spring-petclinic-jooq/blob/main/src/main/resources/db/mysql/petclinic_db_setup_mysql.txt)
+and [PostgreSQL](https://github.com/spring-petclinic/spring-petclinic-jooq/blob/main/src/main/resources/db/postgres/petclinic_db_setup_postgres.txt).
 
 Instead of vanilla `docker` you can also use the provided `docker-compose.yml` file to start the database containers. Each one has a service named after the Spring profile:
 
@@ -106,7 +144,7 @@ The following items should be installed in your system:
 1. On the command line run:
 
     ```bash
-    git clone https://github.com/spring-projects/spring-petclinic.git
+    git clone https://github.com/spring-petclinic/spring-petclinic-jooq.git
     ```
 
 1. Inside Eclipse or STS:
@@ -131,13 +169,13 @@ The following items should be installed in your system:
 
 |Spring Boot Configuration | Class or Java property files  |
 |--------------------------|---|
-|The Main Class | [PetClinicApplication](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java) |
-|Properties Files | [application.properties](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/resources) |
-|Caching | [CacheConfiguration](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java) |
+|The Main Class | [PetClinicApplication](https://github.com/spring-petclinic/spring-petclinic-jooq/blob/main/src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java) |
+|Properties Files | [application.properties](https://github.com/spring-petclinic/spring-petclinic-jooq/blob/main/src/main/resources) |
+|Caching | [CacheConfiguration](https://github.com/spring-petclinic/spring-petclinic-jooq/blob/main/src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java) |
 
 ## Interesting Spring Petclinic branches and forks
 
-The Spring Petclinic "main" branch in the [spring-projects](https://github.com/spring-projects/spring-petclinic)
+The Spring Petclinic "main" branch in the [spring-projects](https://github.com/spring-petclinic/spring-petclinic-jooq)
 GitHub org is the "canonical" implementation based on Spring Boot and Thymeleaf. There are
 [quite a few forks](https://spring-petclinic.github.io/docs/forks.html) in the GitHub org
 [spring-petclinic](https://github.com/spring-petclinic). If you are interested in using a different technology stack to implement the Pet Clinic, please join the community there.
@@ -155,7 +193,7 @@ Here is a list of them:
 
 ## Contributing
 
-The [issue tracker](https://github.com/spring-projects/spring-petclinic/issues) is the preferred channel for bug reports, feature requests and submitting pull requests.
+The [issue tracker](https://github.com/spring-petclinic/spring-petclinic-jooq/issues) is the preferred channel for bug reports, feature requests and submitting pull requests.
 
 For pull requests, editor preferences are available in the [editor config](.editorconfig) for easy use in common text editors. Read more and download plugins at <https://editorconfig.org>. All commits must include a __Signed-off-by__ trailer at the end of each commit message to indicate that the contributor agrees to the Developer Certificate of Origin.
 For additional details, please refer to the blog post [Hello DCO, Goodbye CLA: Simplifying Contributions to Spring](https://spring.io/blog/2025/01/06/hello-dco-goodbye-cla-simplifying-contributions-to-spring).
