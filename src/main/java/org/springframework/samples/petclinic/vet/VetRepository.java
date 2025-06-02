@@ -53,6 +53,12 @@ import static org.jooq.impl.DSL.*;
 @Repository
 public class VetRepository {
 
+	public static final Field<List<Specialty>> MULTISET_SPECIALITIES = multiset(
+			select(VET_SPECIALTIES.specialties().ID, VET_SPECIALTIES.specialties().NAME).from(VET_SPECIALTIES)
+				.where(VET_SPECIALTIES.VET_ID.eq(VETS.ID)))
+		.as("specialties")
+		.convertFrom(result -> result.map(it -> new Specialty(it.get(SPECIALTIES.ID), it.get(SPECIALTIES.NAME))));
+
 	private final DSLContext dsl;
 
 	public VetRepository(DSLContext dslContext) {
@@ -66,13 +72,12 @@ public class VetRepository {
 	@Transactional(readOnly = true)
 	@Cacheable("vets")
 	public List<Vet> findAll() throws DataAccessException {
-		Field<List<Specialty>> specialties = multisetSpecialities();
-		return dsl.select(VETS.ID, VETS.FIRST_NAME, VETS.LAST_NAME, specialties)
+		return dsl.select(VETS.ID, VETS.FIRST_NAME, VETS.LAST_NAME, MULTISET_SPECIALITIES)
 			.from(VETS)
 			.leftJoin(VETS.vetSpecialties())
 			.orderBy(VETS.ID)
 			.fetch(it -> new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME),
-					new HashSet<>(it.get(specialties))));
+					new HashSet<>(it.get(MULTISET_SPECIALITIES))));
 	}
 
 	/**
@@ -84,28 +89,19 @@ public class VetRepository {
 	@Transactional(readOnly = true)
 	@Cacheable("vets")
 	public Page<Vet> findAll(Pageable pageable) throws DataAccessException {
-		Field<List<Specialty>> specialties = multisetSpecialities();
 		var ref = new Object() {
 			Integer totalVets = 0;
 
 		};
 		List<Vet> vets = JooqHelper
-			.paginate(dsl, dsl.select(VETS.ID, VETS.FIRST_NAME, VETS.LAST_NAME, multisetSpecialities()).from(VETS),
+			.paginate(dsl, dsl.select(VETS.ID, VETS.FIRST_NAME, VETS.LAST_NAME, MULTISET_SPECIALITIES).from(VETS),
 					new Field[] { VETS.ID }, pageable.pageSize(), pageable.getOffset())
 			.fetch(it -> {
 				ref.totalVets = (Integer) it.get("total_rows");
 				return new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME),
-						new HashSet<>(it.get(specialties)));
+						new HashSet<>(it.get(MULTISET_SPECIALITIES)));
 			});
 		return new Page<>(vets, pageable, ref.totalVets);
-	}
-
-	private static Field<List<Specialty>> multisetSpecialities() {
-		return multiset(
-				select(VET_SPECIALTIES.specialties().ID, VET_SPECIALTIES.specialties().NAME).from(VET_SPECIALTIES)
-					.where(VET_SPECIALTIES.VET_ID.eq(VETS.ID)))
-			.as("specialties")
-			.convertFrom(result -> result.map(it -> new Specialty(it.get(SPECIALTIES.ID), it.get(SPECIALTIES.NAME))));
 	}
 
 }
