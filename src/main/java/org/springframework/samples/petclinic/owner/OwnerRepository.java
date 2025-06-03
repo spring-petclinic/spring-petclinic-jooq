@@ -50,6 +50,12 @@ import static org.jooq.impl.DSL.select;
 @Repository
 public class OwnerRepository {
 
+	public static final Field<List<Pet>> MULTISET_PETS = multiset(
+			select().from(PETS).join(PETS.types_()).where(OWNERS.ID.eq(PETS.OWNER_ID)))
+		.as("pets")
+		.convertFrom(result -> result.map(it -> new Pet(it.get(PETS.ID), it.get(PETS.NAME), it.get(PETS.BIRTH_DATE),
+				new PetType(it.get(PETS.TYPE_ID), it.get(TYPES.NAME)))));
+
 	private final DSLContext dsl;
 
 	public OwnerRepository(DSLContext dsl) {
@@ -64,7 +70,6 @@ public class OwnerRepository {
 	 * found)
 	 */
 	public Page<Owner> findByLastNameStartingWith(String lastName, Pageable pageable) {
-		Field<List<Pet>> pets = multisetPets();
 		var ref = new Object() {
 			Integer totalOwners = 0;
 
@@ -72,14 +77,14 @@ public class OwnerRepository {
 		List<Owner> owners = JooqHelper
 			.paginate(dsl,
 					dsl.select(OWNERS.ID, OWNERS.FIRST_NAME, OWNERS.LAST_NAME, OWNERS.ADDRESS, OWNERS.CITY,
-							OWNERS.TELEPHONE, multisetPets())
+							OWNERS.TELEPHONE, MULTISET_PETS)
 						.from(OWNERS)
 						.where(OWNERS.LAST_NAME.likeIgnoreCase(lastName + "%")),
 					new Field[] { OWNERS.ID }, pageable.pageSize(), pageable.getOffset())
 			.fetch(it -> {
 				ref.totalOwners = (Integer) it.get("total_rows");
 				return new Owner(it.get(OWNERS.ID), it.get(OWNERS.FIRST_NAME), it.get(OWNERS.LAST_NAME),
-						it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE), it.get(pets));
+						it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE), it.get(MULTISET_PETS));
 			});
 		return new Page<>(owners, pageable, ref.totalOwners);
 	}
@@ -100,11 +105,11 @@ public class OwnerRepository {
 	public Optional<Owner> findById(@Nonnull Integer id) {
 		Optional<Owner> owner = dsl
 			.select(OWNERS.ID, OWNERS.FIRST_NAME, OWNERS.LAST_NAME, OWNERS.ADDRESS, OWNERS.CITY, OWNERS.TELEPHONE,
-					multisetPets())
+					MULTISET_PETS)
 			.from(OWNERS)
 			.where(OWNERS.ID.eq(id))
 			.fetchOptional(it -> new Owner(it.get(OWNERS.ID), it.get(OWNERS.FIRST_NAME), it.get(OWNERS.LAST_NAME),
-					it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE), it.get(multisetPets())));
+					it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE), it.get(MULTISET_PETS)));
 
 		// TODO : improve the N+1 select issue (not reallu a problem in this use case
 		// because an owner has a limited number of pets)
@@ -134,12 +139,6 @@ public class OwnerRepository {
 	private Map<Field<?>, Object> mapOwnerToRecord(Owner owner) {
 		return Map.of(OWNERS.FIRST_NAME, owner.getFirstName(), OWNERS.LAST_NAME, owner.getLastName(), OWNERS.ADDRESS,
 				owner.getAddress(), OWNERS.CITY, owner.getCity(), OWNERS.TELEPHONE, owner.getTelephone());
-	}
-
-	private static Field<List<Pet>> multisetPets() {
-		return multiset(select().from(PETS).join(PETS.types_()).where(OWNERS.ID.eq(PETS.OWNER_ID))).as("pets")
-			.convertFrom(result -> result.map(it -> new Pet(it.get(PETS.ID), it.get(PETS.NAME), it.get(PETS.BIRTH_DATE),
-					new PetType(it.get(PETS.TYPE_ID), it.get(TYPES.NAME)))));
 	}
 
 }
