@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import jakarta.annotation.Nonnull;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.springframework.samples.petclinic.system.JooqHelper;
@@ -27,13 +26,14 @@ import org.springframework.samples.petclinic.system.Page;
 import org.springframework.samples.petclinic.system.Pageable;
 import org.springframework.stereotype.Repository;
 
+import jakarta.annotation.Nonnull;
+
 import static java.util.Objects.requireNonNull;
 import static org.jooq.generated.tables.Owners.OWNERS;
 import static org.jooq.generated.tables.Pets.PETS;
 import static org.jooq.generated.tables.Types.TYPES;
 import static org.jooq.generated.tables.Visits.VISITS;
-import static org.jooq.impl.DSL.multiset;
-import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.DSL.*;
 
 /**
  * Repository class for <code>Owner</code> domain objects All method names are compliant
@@ -55,6 +55,19 @@ public class OwnerRepository {
 		.as("pets")
 		.convertFrom(result -> result.map(it -> new Pet(it.get(PETS.ID), it.get(PETS.NAME), it.get(PETS.BIRTH_DATE),
 				new PetType(it.get(PETS.TYPE_ID), it.get(TYPES.NAME)))));
+
+	public static final Field<List<Pet>> MULTISET_PETS_WITH_VISITS = multiset(select(PETS.ID, PETS.NAME,
+			PETS.BIRTH_DATE, PETS.TYPE_ID, TYPES.NAME,
+			multiset(select(VISITS.ID, VISITS.PET_ID, VISITS.VISIT_DATE, VISITS.DESCRIPTION).from(VISITS)
+				.where(VISITS.PET_ID.eq(PETS.ID)))
+				.convertFrom(r -> r
+					.map(v -> new Visit(v.get(VISITS.ID), v.get(VISITS.VISIT_DATE), v.get(VISITS.DESCRIPTION)))))
+		.from(PETS)
+		.join(TYPES)
+		.on(PETS.TYPE_ID.eq(TYPES.ID))
+		.where(OWNERS.ID.eq(PETS.OWNER_ID))).as("pets_with_visits")
+		.convertFrom(result -> result.map(it -> new Pet(it.get(PETS.ID), it.get(PETS.NAME), it.get(PETS.BIRTH_DATE),
+				new PetType(it.get(PETS.TYPE_ID), it.get(TYPES.NAME)), it.getValue(5, List.class))));
 
 	private final DSLContext dsl;
 
@@ -103,24 +116,14 @@ public class OwnerRepository {
 	 * input for id)
 	 */
 	public Optional<Owner> findById(@Nonnull Integer id) {
-		Optional<Owner> owner = dsl
+		return dsl
 			.select(OWNERS.ID, OWNERS.FIRST_NAME, OWNERS.LAST_NAME, OWNERS.ADDRESS, OWNERS.CITY, OWNERS.TELEPHONE,
-					MULTISET_PETS)
+					MULTISET_PETS_WITH_VISITS)
 			.from(OWNERS)
 			.where(OWNERS.ID.eq(id))
 			.fetchOptional(it -> new Owner(it.get(OWNERS.ID), it.get(OWNERS.FIRST_NAME), it.get(OWNERS.LAST_NAME),
-					it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE), it.get(MULTISET_PETS)));
-
-		// TODO : improve the N+1 select issue (not reallu a problem in this use case
-		// because an owner has a limited number of pets)
-		owner.ifPresent(value -> value.getPets().forEach(pet -> {
-			List<Visit> visits = dsl.select(VISITS.ID, VISITS.PET_ID, VISITS.VISIT_DATE, VISITS.DESCRIPTION)
-				.from(VISITS)
-				.where(VISITS.PET_ID.eq(pet.getId()))
-				.fetch(it -> new Visit(it.get(VISITS.ID), it.get(VISITS.VISIT_DATE), it.get(VISITS.DESCRIPTION)));
-			pet.getVisits().addAll(visits);
-		}));
-		return owner;
+					it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE),
+					it.get(MULTISET_PETS_WITH_VISITS)));
 
 	}
 
