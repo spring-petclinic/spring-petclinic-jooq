@@ -1,4 +1,4 @@
-src/main/resources/META-INF/resources/css/petclinic.css linguist-generated=true
+*.css linguist-generated=true
 
 mvnw            text eol=lf
 *.java          text eol=lf
