@@ -48,12 +48,12 @@ public class PetRepository {
 
 	@Transactional(readOnly = true)
 	public Optional<Pet> findById(Integer petId) {
-		return dsl.select()
-			.from(PETS)
-			.join(PETS.types_())
-			.where(PETS.ID.eq(petId))
-			.fetchOptional(it -> new Pet(it.get(PETS.ID), it.get(PETS.NAME), it.get(PETS.BIRTH_DATE),
-					new PetType(it.get(PETS.TYPE_ID), it.get(TYPES.NAME))));
+		return dsl.select().from(PETS).join(PETS.types_()).where(PETS.ID.eq(petId)).fetchOptional(PetRepository::toPet);
+	}
+
+	private static Pet toPet(org.jooq.Record row) {
+		return new Pet(row.get(PETS.ID), row.get(PETS.NAME), row.get(PETS.BIRTH_DATE),
+				new PetType(row.get(PETS.TYPE_ID), row.get(TYPES.NAME)));
 	}
 
 }

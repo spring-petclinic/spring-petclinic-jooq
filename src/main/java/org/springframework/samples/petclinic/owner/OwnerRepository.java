@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.Record7;
 import org.springframework.samples.petclinic.system.JooqHelper;
 import org.springframework.samples.petclinic.system.Page;
 import org.springframework.samples.petclinic.system.Pageable;
@@ -96,10 +97,14 @@ public class OwnerRepository {
 					new Field[] { OWNERS.ID }, pageable.pageSize(), pageable.getOffset())
 			.fetch(it -> {
 				ref.totalOwners = (Integer) it.get("total_rows");
-				return new Owner(it.get(OWNERS.ID), it.get(OWNERS.FIRST_NAME), it.get(OWNERS.LAST_NAME),
-						it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE), it.get(MULTISET_PETS));
+				return toOwner(it);
 			});
 		return new Page<>(owners, pageable, ref.totalOwners);
+	}
+
+	private static Owner toOwner(org.jooq.Record row) {
+		return new Owner(row.get(OWNERS.ID), row.get(OWNERS.FIRST_NAME), row.get(OWNERS.LAST_NAME),
+				row.get(OWNERS.ADDRESS), row.get(OWNERS.CITY), row.get(OWNERS.TELEPHONE), row.get(MULTISET_PETS));
 	}
 
 	/**
@@ -121,10 +126,14 @@ public class OwnerRepository {
 					MULTISET_PETS_WITH_VISITS)
 			.from(OWNERS)
 			.where(OWNERS.ID.eq(id))
-			.fetchOptional(it -> new Owner(it.get(OWNERS.ID), it.get(OWNERS.FIRST_NAME), it.get(OWNERS.LAST_NAME),
-					it.get(OWNERS.ADDRESS), it.get(OWNERS.CITY), it.get(OWNERS.TELEPHONE),
-					it.get(MULTISET_PETS_WITH_VISITS)));
+			.fetchOptional(OwnerRepository::toOwner);
 
+	}
+
+	private static Owner toOwner(Record7<Integer, String, String, String, String, String, List<Pet>> row) {
+		return new Owner(row.get(OWNERS.ID), row.get(OWNERS.FIRST_NAME), row.get(OWNERS.LAST_NAME),
+				row.get(OWNERS.ADDRESS), row.get(OWNERS.CITY), row.get(OWNERS.TELEPHONE),
+				row.get(MULTISET_PETS_WITH_VISITS));
 	}
 
 	public Integer save(Owner owner) {

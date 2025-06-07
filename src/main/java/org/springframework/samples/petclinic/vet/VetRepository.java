@@ -17,6 +17,7 @@ package org.springframework.samples.petclinic.vet;
 
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.Record4;
 import org.jooq.exception.DataAccessException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.samples.petclinic.system.JooqHelper;
@@ -76,8 +77,12 @@ public class VetRepository {
 			.from(VETS)
 			.leftJoin(VETS.vetSpecialties())
 			.orderBy(VETS.ID)
-			.fetch(it -> new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME),
-					new HashSet<>(it.get(MULTISET_SPECIALITIES))));
+			.fetch(VetRepository::toVet);
+	}
+
+	private static Vet toVet(Record4<Integer, String, String, List<Specialty>> row) {
+		return new Vet(row.get(VETS.ID), row.get(VETS.FIRST_NAME), row.get(VETS.LAST_NAME),
+				new HashSet<>(row.get(MULTISET_SPECIALITIES)));
 	}
 
 	/**
@@ -98,10 +103,14 @@ public class VetRepository {
 					new Field[] { VETS.ID }, pageable.pageSize(), pageable.getOffset())
 			.fetch(it -> {
 				ref.totalVets = (Integer) it.get("total_rows");
-				return new Vet(it.get(VETS.ID), it.get(VETS.FIRST_NAME), it.get(VETS.LAST_NAME),
-						new HashSet<>(it.get(MULTISET_SPECIALITIES)));
+				return toVet(it);
 			});
 		return new Page<>(vets, pageable, ref.totalVets);
+	}
+
+	private static Vet toVet(org.jooq.Record row) {
+		return new Vet(row.get(VETS.ID), row.get(VETS.FIRST_NAME), row.get(VETS.LAST_NAME),
+				new HashSet<>(row.get(MULTISET_SPECIALITIES)));
 	}
 
 }
