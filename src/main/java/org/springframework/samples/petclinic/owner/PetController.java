@@ -62,7 +62,7 @@ class PetController {
 
 	@ModelAttribute("owner")
 	public Owner findOwner(@PathVariable("ownerId") int ownerId) {
-		Optional<Owner> optionalOwner = this.owners.findById(ownerId);
+		Optional<Owner> optionalOwner = this.owners.findByIdWithPetsAndVisits(ownerId);
 		Owner owner = optionalOwner.orElseThrow(() -> new IllegalArgumentException(
 				"Owner not found with id: " + ownerId + ". Please ensure the ID is correct "));
 		return owner;
@@ -76,7 +76,7 @@ class PetController {
 			return new Pet();
 		}
 
-		Optional<Pet> optionalPet = this.pets.findById(petId);
+		Optional<Pet> optionalPet = this.pets.findByIdWithoutVisits(petId);
 		return optionalPet.orElseThrow(() -> new IllegalArgumentException(
 				"Pet not found with id: " + petId + ". Please ensure the ID is correct "));
 	}
@@ -115,7 +115,7 @@ class PetController {
 		}
 
 		owner.addPet(pet);
-		this.pets.save(owner.getId(), pet);
+		this.pets.saveDetails(owner.getId(), pet);
 		redirectAttributes.addFlashAttribute("message", "New Pet has been Added");
 		return "redirect:/owners/{ownerId}";
 	}
@@ -148,7 +148,7 @@ class PetController {
 			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 		}
 
-		pets.update(pet);
+		pets.updateDetails(pet);
 		redirectAttributes.addFlashAttribute("message", "Pet details has been edited");
 		return "redirect:/owners/{ownerId}";
 	}

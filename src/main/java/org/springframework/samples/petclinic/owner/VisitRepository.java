@@ -16,7 +16,7 @@ public class VisitRepository {
 		this.dsl = dslContext;
 	}
 
-	public int save(Visit visit) {
+	public int saveDetails(Visit visit) {
 		return dsl.insertInto(VISITS)
 			.set(VISITS.PET_ID, visit.petId())
 			.set(VISITS.VISIT_DATE, visit.date())

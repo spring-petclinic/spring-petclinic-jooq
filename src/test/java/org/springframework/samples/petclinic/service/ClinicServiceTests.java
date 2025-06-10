@@ -85,16 +85,16 @@ class ClinicServiceTests {
 
 	@Test
 	void shouldFindOwnersByLastName() {
-		Page<Owner> owners = this.owners.findByLastNameStartingWith("Davis", pageable);
+		Page<Owner> owners = this.owners.findByLastNameWithPetsOnly("Davis", pageable);
 		assertThat(owners).hasSize(2);
 
-		owners = this.owners.findByLastNameStartingWith("Daviss", pageable);
+		owners = this.owners.findByLastNameWithPetsOnly("Daviss", pageable);
 		assertThat(owners).isEmpty();
 	}
 
 	@Test
 	void shouldFindSingleOwnerWithPet() {
-		Optional<Owner> optionalOwner = this.owners.findById(1);
+		Optional<Owner> optionalOwner = this.owners.findByIdWithPetsAndVisits(1);
 		assertThat(optionalOwner).isPresent();
 		Owner owner = optionalOwner.get();
 		assertThat(owner.getLastName()).startsWith("Franklin");
@@ -106,7 +106,7 @@ class ClinicServiceTests {
 	@Test
 	@Transactional
 	void shouldInsertOwner() {
-		Page<Owner> owners = this.owners.findByLastNameStartingWith("Schultz", pageable);
+		Page<Owner> owners = this.owners.findByLastNameWithPetsOnly("Schultz", pageable);
 		int found = (int) owners.getTotalElements();
 
 		Owner owner = new Owner();
@@ -115,27 +115,27 @@ class ClinicServiceTests {
 		owner.setAddress("4, Evans Street");
 		owner.setCity("Wollongong");
 		owner.setTelephone("4444444444");
-		Integer ownerId = this.owners.save(owner);
+		Integer ownerId = this.owners.saveOrUpdateDetails(owner);
 		assertThat(ownerId).isNotNull();
 
-		owners = this.owners.findByLastNameStartingWith("Schultz", pageable);
+		owners = this.owners.findByLastNameWithPetsOnly("Schultz", pageable);
 		assertThat(owners.getTotalElements()).isEqualTo(found + 1);
 	}
 
 	@Test
 	@Transactional
 	void shouldUpdateOwner() {
-		Optional<Owner> optionalOwner = this.owners.findById(1);
+		Optional<Owner> optionalOwner = this.owners.findByIdWithPetsAndVisits(1);
 		assertThat(optionalOwner).isPresent();
 		Owner owner = optionalOwner.get();
 		String oldLastName = owner.getLastName();
 		String newLastName = oldLastName + "X";
 
 		owner.setLastName(newLastName);
-		this.owners.save(owner);
+		this.owners.saveOrUpdateDetails(owner);
 
 		// retrieving new name from database
-		optionalOwner = this.owners.findById(1);
+		optionalOwner = this.owners.findByIdWithPetsAndVisits(1);
 		assertThat(optionalOwner).isPresent();
 		owner = optionalOwner.get();
 		assertThat(owner.getLastName()).isEqualTo(newLastName);
@@ -154,7 +154,7 @@ class ClinicServiceTests {
 	@Test
 	@Transactional
 	void shouldInsertPetIntoDatabaseAndGenerateId() {
-		Optional<Owner> optionalOwner = this.owners.findById(6);
+		Optional<Owner> optionalOwner = this.owners.findByIdWithPetsAndVisits(6);
 		assertThat(optionalOwner).isPresent();
 		Owner owner6 = optionalOwner.get();
 
@@ -166,9 +166,9 @@ class ClinicServiceTests {
 		pet.setType(types.stream().filter(v -> v.id() == 2).findFirst().orElseThrow());
 		pet.setBirthDate(LocalDate.now());
 
-		this.pets.save(owner6.getId(), pet);
+		this.pets.saveDetails(owner6.getId(), pet);
 
-		optionalOwner = this.owners.findById(6);
+		optionalOwner = this.owners.findByIdWithPetsAndVisits(6);
 		assertThat(optionalOwner).isPresent();
 		owner6 = optionalOwner.get();
 		assertThat(owner6.getPets()).hasSize(found + 1);
@@ -180,7 +180,7 @@ class ClinicServiceTests {
 	@Test
 	@Transactional
 	void shouldUpdatePetName() {
-		Optional<Owner> optionalOwner = this.owners.findById(6);
+		Optional<Owner> optionalOwner = this.owners.findByIdWithPetsAndVisits(6);
 		assertThat(optionalOwner).isPresent();
 		Owner owner6 = optionalOwner.get();
 
@@ -189,9 +189,9 @@ class ClinicServiceTests {
 
 		String newName = oldName + "X";
 		pet7.setName(newName);
-		this.pets.update(pet7);
+		this.pets.updateDetails(pet7);
 
-		optionalOwner = this.owners.findById(6);
+		optionalOwner = this.owners.findByIdWithPetsAndVisits(6);
 		assertThat(optionalOwner).isPresent();
 		owner6 = optionalOwner.get();
 		pet7 = owner6.getPet(7);
@@ -212,14 +212,14 @@ class ClinicServiceTests {
 	@Test
 	@Transactional
 	void shouldAddNewVisitForPet() {
-		Optional<Owner> optionalOwner = this.owners.findById(6);
+		Optional<Owner> optionalOwner = this.owners.findByIdWithPetsAndVisits(6);
 		assertThat(optionalOwner).isPresent();
 		Owner owner6 = optionalOwner.get();
 
 		Pet pet7 = owner6.getPet(7);
 		int found = pet7.getVisits().size();
 		Visit visit = new Visit(LocalDate.now(), "test", pet7.getId());
-		int count = this.visits.save(visit);
+		int count = this.visits.saveDetails(visit);
 		List<Visit> visits = this.visits.findByPetId(pet7.getId());
 
 		assertThat(count).isEqualTo(1);
@@ -229,7 +229,7 @@ class ClinicServiceTests {
 
 	@Test
 	void shouldFindVisitsByPetId() {
-		Optional<Owner> optionalOwner = this.owners.findById(6);
+		Optional<Owner> optionalOwner = this.owners.findByIdWithPetsAndVisits(6);
 		assertThat(optionalOwner).isPresent();
 		Owner owner6 = optionalOwner.get();
 
@@ -245,7 +245,7 @@ class ClinicServiceTests {
 
 	@Test
 	void shouldFindPetById() {
-		Optional<Pet> pet = this.pets.findById(4);
+		Optional<Pet> pet = this.pets.findByIdWithoutVisits(4);
 
 		assertThat(pet).isPresent();
 		assertThat(pet.get().getId()).isEqualTo(4);
