@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.samples.petclinic.model.Person;
-import org.springframework.util.Assert;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.NotBlank;
@@ -149,23 +148,6 @@ public class Owner extends Person {
 			.append("city", this.city)
 			.append("telephone", this.telephone)
 			.toString();
-	}
-
-	/**
-	 * Adds the given {@link Visit} to the {@link Pet} with the given identifier.
-	 * @param petId the identifier of the {@link Pet}, must not be {@literal null}.
-	 * @param visit the visit to add, must not be {@literal null}.
-	 */
-	public void addVisit(Integer petId, Visit visit) {
-
-		Assert.notNull(petId, "Pet identifier must not be null!");
-		Assert.notNull(visit, "Visit must not be null!");
-
-		Pet pet = getPet(petId);
-
-		Assert.notNull(pet, "Invalid Pet identifier!");
-
-		pet.addVisit(visit);
 	}
 
 }
