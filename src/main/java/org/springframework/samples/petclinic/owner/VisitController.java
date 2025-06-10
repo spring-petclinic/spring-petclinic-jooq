@@ -66,7 +66,7 @@ class VisitController {
 	@ModelAttribute("pet")
 	public Pet loadPetAndOwner(@PathVariable("ownerId") int ownerId, @PathVariable("petId") int petId,
 			Map<String, Object> model) {
-		Optional<Owner> optionalOwner = owners.findById(ownerId);
+		Optional<Owner> optionalOwner = owners.findByIdWithPetsAndVisits(ownerId);
 		Owner owner = optionalOwner.orElseThrow(() -> new IllegalArgumentException(
 				"Owner not found with id: " + ownerId + ". Please ensure the ID is correct "));
 
@@ -96,7 +96,7 @@ class VisitController {
 		if (result.hasErrors()) {
 			return "pets/createOrUpdateVisitForm";
 		}
-		visits.save(new Visit(visit.id(), visit.date(), visit.description(), petId));
+		visits.saveDetails(new Visit(visit.id(), visit.date(), visit.description(), petId));
 		redirectAttributes.addFlashAttribute("message", "Your visit has been booked");
 		return "redirect:/owners/{ownerId}";
 	}

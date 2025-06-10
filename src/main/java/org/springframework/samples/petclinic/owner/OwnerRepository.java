@@ -83,7 +83,7 @@ public class OwnerRepository {
 	 * @return a Collection of matching {@link Owner}s (or an empty Collection if none
 	 * found)
 	 */
-	public Page<Owner> findByLastNameStartingWith(String lastName, Pageable pageable) {
+	public Page<Owner> findByLastNameWithPetsOnly(String lastName, Pageable pageable) {
 		var ref = new Object() {
 			Integer totalOwners = 0;
 
@@ -120,7 +120,7 @@ public class OwnerRepository {
 	 * @throws IllegalArgumentException if the id is null (assuming null is not a valid
 	 * input for id)
 	 */
-	public Optional<Owner> findById(@Nonnull Integer id) {
+	public Optional<Owner> findByIdWithPetsAndVisits(@Nonnull Integer id) {
 		return dsl
 			.select(OWNERS.ID, OWNERS.FIRST_NAME, OWNERS.LAST_NAME, OWNERS.ADDRESS, OWNERS.CITY, OWNERS.TELEPHONE,
 					MULTISET_PETS_WITH_VISITS)
@@ -136,7 +136,7 @@ public class OwnerRepository {
 				row.get(MULTISET_PETS_WITH_VISITS));
 	}
 
-	public Integer save(Owner owner) {
+	public Integer saveOrUpdateDetails(Owner owner) {
 		if (owner.isNew()) {
 			return requireNonNull(
 					dsl.insertInto(OWNERS).set(mapOwnerToRecord(owner)).returningResult(OWNERS.ID).fetchOne())

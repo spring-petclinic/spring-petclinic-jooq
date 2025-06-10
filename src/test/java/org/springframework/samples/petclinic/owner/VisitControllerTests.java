@@ -64,7 +64,7 @@ class VisitControllerTests {
 		Pet pet = new Pet();
 		owner.addPet(pet);
 		pet.setId(TEST_PET_ID);
-		given(this.owners.findById(TEST_OWNER_ID)).willReturn(Optional.of(owner));
+		given(this.owners.findByIdWithPetsAndVisits(TEST_OWNER_ID)).willReturn(Optional.of(owner));
 	}
 
 	@Test

@@ -28,7 +28,7 @@ public class PetRepository {
 		return dsl.selectFrom(TYPES).orderBy(TYPES.NAME).fetchInto(PetType.class);
 	}
 
-	public void save(Integer ownerId, Pet pet) {
+	public void saveDetails(Integer ownerId, Pet pet) {
 		dsl.insertInto(PETS)
 			.set(PETS.NAME, pet.getName())
 			.set(PETS.TYPE_ID, pet.getType().id())
@@ -37,7 +37,7 @@ public class PetRepository {
 			.execute();
 	}
 
-	public void update(Pet pet) {
+	public void updateDetails(Pet pet) {
 		dsl.update(PETS)
 			.set(PETS.NAME, pet.getName())
 			.set(PETS.TYPE_ID, pet.getType().id())
@@ -47,7 +47,7 @@ public class PetRepository {
 	}
 
 	@Transactional(readOnly = true)
-	public Optional<Pet> findById(Integer petId) {
+	public Optional<Pet> findByIdWithoutVisits(Integer petId) {
 		return dsl.select().from(PETS).join(PETS.types_()).where(PETS.ID.eq(petId)).fetchOptional(PetRepository::toPet);
 	}
 
